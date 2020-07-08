@@ -1,0 +1,19 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "compilepage",
+      "type": "shell",
+      "command": "gulp compilepage",
+      "options": {
+        "cwd": "${workspaceFolder}/web-app",
+        "statusbar": {
+          "label" : "Gulp Compile",
+          "hide": false
+        }
+      }
+    }
+  ]
+}
