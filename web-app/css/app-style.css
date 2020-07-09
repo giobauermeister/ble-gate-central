@@ -4,7 +4,7 @@
 body {
   /* background-color: #42b983!important; */
   /* background-color: #EAEAEA!important; */
-  background-color: #1b2943!important;
+  background-color: #b2bdc2!important;
   height: 100%;
   margin: 0;
 }
@@ -14,7 +14,31 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  /* color: #607D8B; */
+}
+.input-deviceid {
+  padding-bottom: 20px;
+  max-width: 21rem;
+  margin: 0 auto;
+}
+.device-id-table {
+  text-align: left;
+  background-color: #fdfcfc;
+  max-width: 21rem;
+  margin: 0 auto;
+}
+.delete-button {
+  padding: 0; 
+  background-color: transparent!important; 
+  border-color: transparent!important;
+}
+.delete-button:focus, .delete-button:active {
+  outline: none !important;
+  box-shadow: none;
+}
+.prepend-color {
+  background-color: #7b8085;
+  color: rgb(245, 251, 255);
 }
 .input-ssid {
   padding-bottom: 15px;
@@ -57,17 +81,23 @@ body {
 .card-container {
   max-width: 26rem;
   height: 30rem;
-  color: #dbe1e7;
-  background-color: #2f4564;
+  border: rgb(0, 0, 0);
+  border-radius:10px !important;
+  background-color: #cfd4da;
   margin-top: 5rem;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 .card-body {
   padding-top: 8px!important;
 }
 .main-card-header {
-  background-color: #223555;
+  background-color: #686f74;
+  color: aliceblue;
   font-variation-settings: "wght" 400;
   font-size: 20px;
+  border: black;
+  border-top-right-radius: 10px!important;
+  border-top-left-radius: 10px!important;
 }
 .fade-enter-active, .fade-leave-active {
   transition: opacity .3s;

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WiFi Manager</title>
+  <title>BLE Gate System</title>
   
   <link rel="stylesheet" href="./css/bootstrap.min.css"/>
   <link rel="stylesheet" href="./css/bootstrap-vue.min.css"/>
@@ -14,8 +14,9 @@
   <div id='app' v-cloak>
 
     <b-container fluid>
-      <b-card class="card-container mx-auto" header-class="main-card-header" header="WiFi Manager">
+      <b-card class="card-container mx-auto" header-class="main-card-header" header="BLE Gate Manager">
 
+        <!-- Connection LED and MAC addres indicator -->
         <b-row sm="4" no-gutters style="width: 80%; margin: 0 auto; padding-bottom: 15px">
           <b-col>
             <div style="display: inline-block;position: relative; top: 2px;" class="led-green"
@@ -27,7 +28,32 @@
           </b-col>
         </b-row>
 
-        <b-input-group class="input-ssid">
+        <b-input-group class="input-deviceid">
+          <template v-slot:prepend>
+            <b-input-group-text class="prepend-color">Device ID</b-input-group-text>
+          </template>
+          <b-form-input type="text" v-model="deviceId"></b-form-input>
+          <template v-slot:append>
+            <b-button variant="" v-on:click="addDeviceId">
+              <img src="./icons/plus-sign.svg">             
+            </b-button>            
+          </template>
+        </b-input-group>
+
+        <div>
+          <b-table :items="items" class="device-id-table">
+            
+            <template v-slot:cell(Action)="row">
+              <b-col>
+                <!-- <b-button @click="$bvModal.show('modal-delete')" style="min-width: 75px">Delete</b-button> -->
+                <b-button class="delete-button"><img src="./icons/delete.svg"> </b-button>
+                
+              </b-col>
+            </template>
+          </b-table>
+        </div>
+
+        <!-- <b-input-group class="input-ssid">
           <template v-slot:prepend>
             <b-input-group-text class="input-ssid-label">SSID</b-input-group-text>
           </template>
@@ -35,16 +61,16 @@
           <template v-slot:append>
             <b-dropdown @show="scanNetworks" right text="Scan" variant="">
               <b-dropdown-item v-on:click="setSsid(ssid)" v-for="ssid in ssidList" :key="ssid">{{ ssid }}</b-dropdown-item>
-              <!-- <b-dropdown-item>GiosWifi</b-dropdown-item>
-              <b-dropdown-item>113</b-dropdown-item> -->
+              <b-dropdown-item>GiosWifi</b-dropdown-item>
+              <b-dropdown-item>113</b-dropdown-item>
               <div class="text-center">
                 <b-spinner v-if="isScanning" type="grow" variant="primary" label="Text Centered"></b-spinner>
               </div>
             </b-dropdown>
           </template>
-        </b-input-group>
+        </b-input-group> -->
 
-        <b-input-group class="input-password">
+        <!-- <b-input-group class="input-password">
           <template v-slot:prepend>
             <b-input-group-text>Password</b-input-group-text>
           </template>
@@ -55,13 +81,13 @@
               <img v-if="!togglePass" src="./icons/eye.svg">              
             </b-button>            
           </template>
-        </b-input-group>
+        </b-input-group> -->
 
-        <b-form-checkbox style="position: left; padding-bottom: 10px" v-model="isStaticIp" name="check-button" switch size="lg">
+        <!-- <b-form-checkbox style="position: left; padding-bottom: 10px" v-model="isStaticIp" name="check-button" switch size="lg">
           Static IP
-        </b-form-checkbox>
+        </b-form-checkbox> -->
 
-        <transition name="fade">
+        <!-- <transition name="fade">
         
           <div v-if="isStaticIp">
             <b-input-group class="input-ipaddress">
@@ -86,10 +112,10 @@
             </b-input-group>
           </div>
   
-        </transition>
+        </transition> -->
 
         <b-row no-gutters style="position: absolute; bottom: 20px; width: 90%; margin: 0 auto;">
-          <b-col>
+          <!-- <b-col>
             <b-button @click="$bvModal.show('modal-save')" style="min-width: 75px">Save</b-button>
           </b-col>
           <b-col>
@@ -97,9 +123,12 @@
           </b-col>
           <b-col>
             <b-button @click="$bvModal.show('modal-test-wifi')" style="min-width: 75px">Test</b-button>
-          </b-col>
+          </b-col> -->
           <b-col>
             <b-button @click="$bvModal.show('modal-start')" style="min-width: 75px">Start</b-button>
+          </b-col>
+          <b-col>
+            <b-button @click="$bvModal.show('modal-stop')" style="min-width: 75px">Stop</b-button>
           </b-col>
         </b-row>
 
@@ -215,6 +244,13 @@ new Vue({
 el: "#app",
   data() {
     return {
+      deviceId: "",
+      items: [
+          { "Device ID": "FA3B", "Action": true },
+          { "Device ID": "FA4B", "Action": true },
+          { "Device ID": "FA5B", "Action": true }
+        ],
+
       name: "Giovanni",
       socket: null,
       togglePass: false,
@@ -247,20 +283,20 @@ el: "#app",
 
     window.setInterval(() => {
       if(!this.isTestingWifi) {
-        console.log("checking connection");
+        //console.log("checking connection");
         this.socket.send("ping");
       }
     }, 2000)
 
     window.setInterval(() => {
       if(!this.isTestingWifi) {
-        console.log("checking last pong time");
+        //console.log("checking last pong time");
         this.timeNow = Date.now();
-        console.log("Last pong time: "+ this.lastPongTime);
-        console.log("Epoch time: " + this.timeNow);
-        console.log("isDeviceConnected status: " + this.isDeviceConnected);            
+        //console.log("Last pong time: "+ this.lastPongTime);
+        //console.log("Epoch time: " + this.timeNow);
+        //console.log("isDeviceConnected status: " + this.isDeviceConnected);            
         if(this.timeNow - this.lastPongTime > 5000){
-          console.log("LAST PONG TIME GREATER");
+          //console.log("LAST PONG TIME GREATER");
           this.isDeviceConnected = false;
           this.isWebSocketAlive = false;
         }
@@ -276,6 +312,11 @@ el: "#app",
 
   },
   methods: {
+    addDeviceId: function() {
+      console.log("addDeviceId");      
+    },
+
+
     togglePassField: function() {
       this.togglePass = !this.togglePass;
       if(!this.togglePass) this.passType = "password";
