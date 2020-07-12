@@ -27,8 +27,12 @@ body {
   max-width: 21rem;
   margin: 0 auto;
 }
+.device-id-table td {
+  padding-top: 3px!important;
+  padding-bottom: 3px!important;
+}
 .delete-button {
-  padding: 0; 
+  padding: 1px; 
   background-color: transparent!important; 
   border-color: transparent!important;
 }
