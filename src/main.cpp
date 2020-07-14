@@ -11,13 +11,16 @@ void handleNotFound();
 void handleRoot();
 void startConfigWebpage();
 
-const char *apSsid = "ESP32 IoT";
+const char *wifiSsid = "xxxx";
+const char *wifiPassword = "xxxx";
+const char *apSsid = " ESP32 BLE Gate";
 const char *apPassword = "";
 
 uint8_t configButton = 23;
 uint8_t builtinLed = 5;
 bool keepConfigWegpage;
 
+uint8_t wifiStatus;
 unsigned long connectTimeout;
 
 WiFiClient client;
@@ -54,7 +57,34 @@ void loop() {
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
 {
-  
+  switch (type)
+  {
+    case WStype_DISCONNECTED:
+    {
+      Serial.printf("[%u] Disconnected!\n", num); 
+    }    
+    break;
+    case WStype_CONNECTED:
+    {
+      IPAddress ip = webSocket.remoteIP(num);
+      Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
+    }
+    break;
+    case WStype_TEXT:
+    {
+      Serial.printf("[%u] get Text: %s\n", num, payload);
+    } 
+    break;
+    case WStype_BIN: 
+    case WStype_PING:
+    case WStype_PONG:
+    case WStype_ERROR:
+    case WStype_FRAGMENT_TEXT_START:
+    case WStype_FRAGMENT_BIN_START:
+    case WStype_FRAGMENT:
+    case WStype_FRAGMENT_FIN:
+    break;
+  }
 }
 
 void handleRoot()
@@ -72,16 +102,48 @@ void handleNotFound()
   server.send(404, "text/plain", "404: Not found");
 }
 
+// void startConfigWebpage()
+// {
+//   Serial.println("Starting AP for configuration");
+//   keepConfigWegpage = true;
+//   WiFi.mode(WIFI_AP_STA);
+//   //WiFi.disconnect();
+//   WiFi.softAP(apSsid, apPassword);
+
+//   Serial.print("IP: ");
+//   Serial.println(WiFi.softAPIP());
+
+//   Serial.println("Starting Websocket loop");
+//   while(keepConfigWegpage)
+//   {
+//     webSocket.loop();
+//     server.handleClient();
+//   }  
+// }
+
 void startConfigWebpage()
 {
   Serial.println("Starting AP for configuration");
   keepConfigWegpage = true;
-  WiFi.mode(WIFI_AP_STA);
+  WiFi.mode(WIFI_STA);
   //WiFi.disconnect();
-  WiFi.softAP(apSsid, apPassword);
+  WiFi.begin(wifiSsid, wifiPassword);
 
-  Serial.print("IP: ");
-  Serial.println(WiFi.softAPIP());
+  connectTimeout = millis() + (15 * 1000);
+  while(true) {
+    wifiStatus = WiFi.status();
+
+    if ((wifiStatus == WL_CONNECTED) || (wifiStatus == WL_NO_SSID_AVAIL) ||
+    (wifiStatus == WL_CONNECT_FAILED) || (millis() >= connectTimeout)) 
+      break;
+
+    delay(100);
+  }
+
+  Serial.println();
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 
   Serial.println("Starting Websocket loop");
   while(keepConfigWegpage)
@@ -90,3 +152,4 @@ void startConfigWebpage()
     server.handleClient();
   }  
 }
+

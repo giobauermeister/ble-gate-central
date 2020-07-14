@@ -574,7 +574,7 @@ el: "#app",
     },
     startWebsocket: function() {
       console.log("startWebsocket");      
-      this.socket = new WebSocket("ws://192.168.4.1:9090", "arduino");
+      this.socket = new WebSocket("ws://192.168.0.11:9090", "arduino");
       //------ WEBSOCKET ON OPEN ------------
       this.socket.onopen = (e) => {
         console.log("websocket OPEN");        
