@@ -321,6 +321,7 @@ el: "#app",
       isErasing: false,
       isSaving: false,
       isSaveOk: false,
+      savedId: "",
       isWifiOk: false,
       isTaskRunning: false,
       isWebSocketAlive: false,
@@ -373,7 +374,25 @@ el: "#app",
   },
   methods: {
     addDeviceId: function() {
-
+      if(this.isDeviceConnected == false)
+      {
+        this.$bvModal.show('modal-running-task');
+        this.isTaskRunning = false;
+        this.taskStatus = "Device not connected";
+        return;
+      }
+      if(this.deviceId == '')
+      {
+        this.$bvModal.show('modal-running-task');
+        this.isTaskRunning = false;
+        this.taskStatus = "Device ID can't be empty";
+        return;
+      }
+      console.log(bvModalEvt.trigger);      
+      this.$bvModal.show('modal-running-task');
+      this.taskStatus = "Saving ID to gate...";
+      this.isTaskRunning = true;
+      this.isSaving = true;
       var deviceObject = {
         "deviceInfo": {
           "deviceIndex": this.items.length,
@@ -381,11 +400,15 @@ el: "#app",
         }        
       }
       console.log(deviceObject);
+      this.socket.send(JSON.stringify(deviceObject));
+
+      
+      console.log(deviceObject);
       console.log(this.items.length);
-      this.items.push({ deviceId: this.deviceId, "Action": false });
-      //this.rowData.push({ "Device ID": this.deviceId, "Action": true })
+      //this.items.push({ deviceId: this.deviceId, "Action": false });
+      //this.rowData.push({ "Device ID": this.deviceId, "Action": true });
       //this.items = this.items + { "Device ID": this.deviceId, "Action": true };
-      this.deviceId = ""; 
+      //this.deviceId = ""; 
       //console.log(this.rowData);
          
     },
@@ -628,6 +651,14 @@ el: "#app",
               default:
                 break;
             }          
+            break;
+          case "savedId":
+            this.savedId = jsonData["savedId"];
+            this.rowData.push({ "Device ID": this.savedId, "Action": true });
+            this.deviceId = ""; 
+            this.isSaving = false;
+            this.isTaskRunning = false;
+            this.taskStatus = "Save OK";
             break;
           case "saveOk":
             this.isSaveOk = jsonData["saveOk"];
