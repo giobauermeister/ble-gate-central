@@ -388,7 +388,7 @@ el: "#app",
         this.taskStatus = "Device ID can't be empty";
         return;
       }
-      console.log(bvModalEvt.trigger);      
+      //console.log(bvModalEvt.trigger);      
       this.$bvModal.show('modal-running-task');
       this.taskStatus = "Saving ID to gate...";
       this.isTaskRunning = true;
@@ -401,9 +401,6 @@ el: "#app",
       }
       console.log(deviceObject);
       this.socket.send(JSON.stringify(deviceObject));
-
-      
-      console.log(deviceObject);
       console.log(this.items.length);
       //this.items.push({ deviceId: this.deviceId, "Action": false });
       //this.rowData.push({ "Device ID": this.deviceId, "Action": true });
@@ -608,53 +605,20 @@ el: "#app",
             this.isWebSocketAlive = true;
             this.lastPongTime = Date.now();
             break;
-          case "ssidArray":
-            console.log(jsonData["ssidArray"]);
-            this.ssidList = jsonData["ssidArray"];
-            this.isScanning = false;
-            this.isWebSocketAlive = true;
+          case "gateInfo":
+            console.log(jsonData["gateInfo"]);
+            this.macAddress = jsonData["gateInfo"]["macAddress"];
             this.isDeviceConnected = true;
-            break;
-          case "testWifiStatus":
+            this.isWebSocketAlive = true;
             this.lastPongTime = Date.now();
-            switch (jsonData["testWifiStatus"]) {
-              case "WL_CONNECTED":
-                this.isTestingWifi = false;
-                this.isTaskRunning = false;
-                this.isWifiOk = true;
-                this.taskStatus = "WiFi Ok! " + "[" + jsonData["testWifiStatus"] + "]";
-                break;
-              case "blankdevice":
-                this.isWifiOk = false;
-                this.isTestingWifi = false;
-                this.isTaskRunning = false;
-                this.taskStatus = "Connection failed. Device not configured";
-                break;
-              case "error":
-                this.isWifiOk = false;
-                this.isTestingWifi = false;
-                this.isTaskRunning = false;
-                this.taskStatus = "Connection failed.";
-                break;
-              case "WL_CONNECT_FAILED":
-                this.isWifiOk = false;
-                this.isTestingWifi = false;
-                this.isTaskRunning = false;
-                this.taskStatus = "Connection failed " + "[" + jsonData["testWifiStatus"] + "]";
-                break;
-              case "WL_NO_SSID_AVAIL":
-                this.isWifiOk = false;
-                this.isTestingWifi = false;
-                this.isTaskRunning = false;
-                this.taskStatus = "Could not find WiFi " + "[" + jsonData["testWifiStatus"] + "]";
-                break;          
-              default:
-                break;
-            }          
             break;
           case "savedId":
-            this.savedId = jsonData["savedId"];
-            this.rowData.push({ "Device ID": this.savedId, "Action": true });
+          console.log(jsonData["savedId"]);
+            this.savedId = jsonData["savedId"]["deviceId"];
+            this.savedDeviceIndex = jsonData["savedId"]["deviceIndex"];
+            console.log("Saved Device ID: " + this.savedId);
+            console.log("Saved Index: " + this.savedDeviceIndex);
+            this.items.push({ deviceId: this.savedId, removeBtn: false });
             this.deviceId = ""; 
             this.isSaving = false;
             this.isTaskRunning = false;

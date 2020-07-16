@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <FFat.h>
+#include <ArduinoJson.h>
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
 void handleNotFound();
@@ -22,6 +23,9 @@ bool keepConfigWegpage;
 
 uint8_t wifiStatus;
 unsigned long connectTimeout;
+
+String deviceIndex;
+String deviceId;
 
 WiFiClient client;
 WebServer server(80);
@@ -68,11 +72,60 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
     {
       IPAddress ip = webSocket.remoteIP(num);
       Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
+      size_t len;
+
+      DynamicJsonDocument gateInfo(JSON_ARRAY_SIZE(500));
+      gateInfo["gateInfo"]["macAddress"] = WiFi.macAddress();
+      len = measureJson(gateInfo);
+      char jsonToSend[len];
+      serializeJson(gateInfo, Serial);
+      serializeJson(gateInfo, jsonToSend, len + 1);
+      webSocket.sendTXT(num, jsonToSend, strlen(jsonToSend));
     }
     break;
     case WStype_TEXT:
     {
       Serial.printf("[%u] get Text: %s\n", num, payload);
+
+      StaticJsonDocument<512> jsonBuffer;
+      deserializeJson(jsonBuffer, payload);
+      JsonObject jsonObject = jsonBuffer.as<JsonObject>();
+
+      if(strcmp((const char*)payload, "ping") == 0)
+      {
+        webSocket.sendTXT(num, "{\"pong\":true}");
+      }
+
+      if(strcmp((const char*)payload, "deviceInfo") == 0)
+      {
+        //webSocket.sendTXT(num, "{\"pong\":true}");
+        //{"deviceInfo":{"deviceIndex":0,"deviceId":"123"}}
+        JsonVariant _deviceIndex = jsonObject["deviceInfo"]["deviceIndex"];
+        JsonVariant _deviceId = jsonObject["deviceInfo"]["deviceId"];
+        deviceIndex = _deviceIndex.as<String>();
+        deviceId = _deviceId.as<String>();
+
+        int len = measureJson(jsonObject);
+        char buff[len];
+        serializeJson(jsonObject, buff, len + 1);
+        File file = FFat.open("/deviceIdDB.txt", "w");
+        if(!file) {
+          Serial.println("device id file open error");
+          return;
+        }
+        if(file.print(buff)){
+          Serial.println("device id file was written");
+          Serial.println(buff);
+          String savedDeviceId = "{\"savedId\":{\"deviceIndex\":\"" + deviceIndex + "\",\"deviceId\":\"" + deviceId + "\"}}";
+          Serial.println(savedDeviceId);
+          webSocket.sendTXT(num, savedDeviceId);
+        } else {
+          Serial.println("device id file failed");
+        }
+        file.close();
+        //blankDevice = false;
+        
+      }
     } 
     break;
     case WStype_BIN: 
